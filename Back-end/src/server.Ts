@@ -44,7 +44,7 @@ app.post("/addtask", async (req, res) => {
     taskName: req.body.taskName,
     description: req.body.description,
     dueDate: req.body.dueDate,
-    taskCompleted: false,
+    isCompleted: req.body.isCompleted,
   });
   await newTask.save();
   res.send(newTask);
@@ -63,6 +63,15 @@ app.put("/updatetask", async (req, res) => {
   );
   res.send(updatedTask);
 });
+app.put("/taskCompleted", async (req, res) => {
+  const updatedTask = await task.updateOne(
+    { _id: req.body.id },
+    { isCompleted: req.body.isCompleted }
+  );
+
+  res.send(updatedTask);
+});
+// delete task
 
 // delete task
 app.delete("/deletetask/:id", async (req, res) => {

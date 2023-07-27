@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { alpha } from "@mui/material/styles";
-import Box from "@mui/material/Box";
+
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -15,24 +15,26 @@ import Paper from "@mui/material/Paper";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 import Task from "./components/Task";
-import Dialog from "@mui/material/Dialog";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Box from "@mui/material/Box";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import dayjs from "dayjs";
 import {
   Button,
   DialogTitle,
   TextField,
   TextareaAutosize,
+  styled,
 } from "@mui/material";
-
+import Form from "./components/Form";
 function App() {
   const [Tasks, setTasks] = useState([]);
   const [open, setOpen] = React.useState(false);
@@ -43,12 +45,16 @@ function App() {
     dueDate: Date,
     isCompleted: false,
   });
+  const [filter, setFilter] = useState("");
+  const [filterDate, setFilterDate] = useState([]);
+
   const [edit, setEdit] = React.useState(true);
   React.useEffect(() => {
     fetch("http://localhost:3000/tasks")
       .then((res) => res.json())
       .then((data) => {
         setTasks(data);
+        setFilterDate(data);
       });
   }, [update]);
   /** 
@@ -65,15 +71,82 @@ function App() {
     color: "#404040",
     marginBottom: "10px",
   };
-  const input = {
-    width: "80%",
-    height: "3em",
 
-    fontSize: "1.5em",
-    position: "relative",
-    margin: "10px",
+  function descendingComparator<T>(a: T, b: T, orderBy: keyof T) {
+    if (b[orderBy] < a[orderBy]) {
+      return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+      return 1;
+    }
+    return 0;
+  }
+  type Order = "asc" | "desc";
+  function getComparator<Key extends keyof any>(
+    order: Order,
+    orderBy: Key
+  ): (
+    a: { [key in Key]: number | string },
+    b: { [key in Key]: number | string }
+  ) => number {
+    return order === "desc"
+      ? (a, b) => descendingComparator(a, b, orderBy)
+      : (a, b) => -descendingComparator(a, b, orderBy);
+  }
+  function stableSort<T>(
+    array: readonly T[],
+    comparator: (a: T, b: T) => number
+  ) {
+    const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
+    stabilizedThis.sort((a, b) => {
+      const order = comparator(a[0], b[0]);
+      if (order !== 0) {
+        return order;
+      }
+      return a[1] - b[1];
+    });
+    return stabilizedThis.map((el) => el[0]);
+  }
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
   };
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+  const [order, setOrder] = React.useState<Order>("asc");
+  const [orderBy, setOrderBy] = React.useState<keyof Data>("isCompleted");
+  const [openOrderBy, setOpenOrderBy] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const emptyRows =
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - Tasks.length) : 0;
 
+  const visibleRows: any[] = React.useMemo(
+    () =>
+      stableSort(filterDate, getComparator(order, orderBy)).slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      ),
+    [order, orderBy, page, rowsPerPage, filterDate]
+  );
+  function handleClose() {
+    setOpenOrderBy(false);
+  }
+  const handleMenuItemClick = (item: string) => {
+    setOrderBy(item); // Update the selected item when a menu item is clicked
+    handleClose();
+  };
+  const handleFilterChange = (event: Event) => {
+    setFilter(event.target.value);
+
+    setFilterDate(() =>
+      Tasks.filter((task) => task.taskName.includes(event.target.value))
+    );
+  };
   return (
     <>
       <Box
@@ -99,53 +172,139 @@ function App() {
         >
           Tasks
         </Box>
-        <Table
+        <Paper
           sx={{
             width: "70vw",
 
             margin: "auto",
             overflow: "hidden",
-            border: "1px solid rgba(224, 224, 224, 1)",
+
             borderRadius: "10px",
             boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
-            padding: "10px",
           }}
         >
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox color="primary"></Checkbox>
-              </TableCell>
-              <TableCell sx={header}>ID</TableCell>
-              <TableCell sx={header}>Name</TableCell>
-              <TableCell sx={header}>Description</TableCell>
-              <TableCell sx={header}>Due Date</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Tasks.map(
-              (task: {
-                _id: string;
-                taskName: string;
-                description: string;
-                dueDate: Date;
-              }) => (
-                <Task
-                  key={task._id}
-                  _id={task._id}
-                  taskName={task.taskName}
-                  description={task.description}
-                  dueDate={task.dueDate}
-                  setOpen={setOpen}
-                  setUpdate={setUpdate}
-                  setFormData={setFormData}
-                  setTasks={setTasks}
-                />
-              )
-            )}
-          </TableBody>
-        </Table>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
+            <ToggleButtonGroup
+              color="primary"
+              value={order}
+              exclusive
+              onChange={(e: React.MouseEvent<HTMLElement>, value: string) => {
+                setOrder(value);
+              }}
+              aria-label="Platform"
+            >
+              <ToggleButton value="desc">descinding</ToggleButton>
+              <ToggleButton value="asc">Ascending</ToggleButton>
+            </ToggleButtonGroup>
+            <Button
+              id="basic-button"
+              aria-controls={openOrderBy ? "basic-menu" : undefined}
+              sx={{
+                fontSize: "1em",
+                position: "relative",
+                color: "#404040",
+                margin: "10px",
+              }}
+              aria-haspopup="true"
+              aria-expanded={openOrderBy ? true : undefined}
+              onClick={(e) => {
+                setAnchorEl(e.currentTarget);
+                setOpenOrderBy(true);
+              }}
+            >
+              order by
+            </Button>
+            <Menu
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={openOrderBy}
+              MenuListProps={{
+                "aria-labelledby": "basic-button",
+              }}
+            >
+              <MenuItem onClick={() => handleMenuItemClick("dueDate")}>
+                dueDate
+              </MenuItem>
+              <MenuItem onClick={() => handleMenuItemClick("isCompleted")}>
+                isCompleted
+              </MenuItem>
+            </Menu>{" "}
+            <TextField
+              label="Filter"
+              value={filter}
+              onChange={handleFilterChange}
+              sx={{
+                display: "inline-block",
+                fontSize: "1.5em",
+                margin: "10px",
+              }}
+              defaultValue={"filter"}
+            />
+          </Box>
 
+          <Table
+            sx={{
+              width: "100%",
+            }}
+          >
+            <TableHead>
+              <TableRow>
+                <TableCell sx={header}>Done</TableCell>
+                <TableCell sx={header}>ID</TableCell>
+                <TableCell sx={header}>Name</TableCell>
+                <TableCell sx={header}>Description</TableCell>
+                <TableCell sx={header}>Due Date</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {visibleRows.map(
+                (task: {
+                  _id: string;
+                  taskName: string;
+                  description: string;
+                  dueDate: Date;
+                  isCompleted: boolean;
+                }) => (
+                  <Task
+                    key={task._id}
+                    _id={task._id}
+                    taskName={task.taskName}
+                    description={task.description}
+                    dueDate={task.dueDate}
+                    setOpen={setOpen}
+                    isCompleted={task.isCompleted}
+                    setUpdate={setUpdate}
+                    setFormData={setFormData}
+                    setTasks={setTasks}
+                  />
+                )
+              )}
+              {emptyRows > 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          <TablePagination
+            sx={{
+              fontSize: "1.5rem",
+            }}
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={Tasks.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
         <Button
           variant="contained"
           color="primary"
@@ -164,144 +323,22 @@ function App() {
               taskName: "",
               description: "",
               dueDate: "",
+              isCompleted: false,
             });
           }}
         >
           Add Task
         </Button>
-
-        <Dialog open={open}>
-          <DialogTitle
-            sx={{
-              margin: "auto",
-              fontSize: "2rem",
-              fontWeight: "bold",
-              lineHeight: "28px",
-              color: "#404040",
-              marginY: "0.5em",
-            }}
-          >
-            {edit ? "Edit Task" : "Add Task"}
-          </DialogTitle>
-          <Button
-            variant="contained"
-            color="secondary"
-            sx={{
-              marginLeft: "1em",
-              marginRight: "1em",
-              display: "inline",
-              position: "absolute",
-              right: "0px",
-              top: "10px",
-            }}
-            onClick={() => {
-              setOpen(false);
-              setEdit(true);
-            }}
-          >
-            Close
-          </Button>
-
-          <Box sx={{ width: "500px", height: "500px" }}>
-            <form
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.5em",
-                fontWeight: "bold",
-              }}
-            >
-              <TextField
-                sx={input}
-                margin="none"
-                type="text"
-                label="Task Name"
-                name="taskName"
-                value={formData.taskName}
-                inputProps={{
-                  style: { fontSize: "1.5em" },
-                }}
-                onChange={(e) => {
-                  setFormData({ ...formData, taskName: e.target.value });
-                }}
-              />
-
-              <TextField
-                sx={input}
-                margin="dense"
-                inputProps={{
-                  style: { fontSize: "1.5em" },
-                }}
-                label="Description"
-                name="description"
-                multiline
-                maxRows={3}
-                value={formData.description}
-                onChange={(e) => {
-                  setFormData({ ...formData, description: e.target.value });
-                }}
-              />
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  sx={input}
-                  label="Due Date"
-                  type="date"
-                  name="dueDate"
-                  lang=" ar-EG"
-                  inputProps={{
-                    style: { fontSize: "1.5em" },
-                  }}
-                  value={formData.dueDate}
-                  onChange={(e) => {
-                    setFormData({ ...formData, dueDate: e });
-                  }}
-                />
-              </LocalizationProvider>
-              <button
-                onClick={(e) => {
-                  if (edit) {
-                    e.preventDefault();
-                    fetch(`http://localhost:3000/updatetask`, {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify(formData),
-                    }).then((data) => {
-                      console.log(data);
-                      setUpdate((prev: any) => !prev);
-                      setOpen(false);
-                    });
-                  } else {
-                    e.preventDefault();
-                    console.log(formData);
-                    fetch(`http://localhost:3000/addtask`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        ...formData,
-                        dueDate: formData.dueDate.format("YYYY-MM-DD"),
-                        isCompleted: false,
-                      }),
-                    })
-                      .then((res) => res.json())
-                      .then((data) => {
-                        console.log(data);
-                        setUpdate((prev: any) => !prev);
-                        setOpen(false);
-                      });
-                  }
-                }}
-              >
-                Submit
-              </button>
-            </form>
-          </Box>
-        </Dialog>
+        //Form
+        <Form
+          open={open}
+          setOpen={setOpen}
+          edit={edit}
+          setEdit={setEdit}
+          formData={formData}
+          setFormData={setFormData}
+          setUpdate={setUpdate}
+        ></Form>
       </Box>
     </>
   );
