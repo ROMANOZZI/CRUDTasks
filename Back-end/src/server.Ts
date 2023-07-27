@@ -51,12 +51,16 @@ app.post("/addtask", async (req, res) => {
 });
 // update task
 app.put("/updatetask", async (req, res) => {
-  const updatedTask = await task.findByIdAndUpdate(req.body.id, {
-    taskName: req.body.taskName,
-    taskDescription: req.body.taskDescription,
-    taskDate: req.body.taskDate,
-    taskCompleted: req.body.taskCompleted,
-  });
+  console.log(req.body);
+  const updatedTask = await task.updateOne(
+    { _id: req.body._id },
+    {
+      taskName: req.body.taskName,
+      description: req.body.description,
+      dueDate: req.body.dueDate,
+      isCompleted: req.body.isCompleted,
+    }
+  );
   res.send(updatedTask);
 });
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { TableRow, TableCell, Checkbox, Button } from "@mui/material";
+import dayjs from "dayjs";
 const row = {
   fontSize: "1.5em",
   fontWeight: "bold",
@@ -47,7 +48,7 @@ const Task = (task: {
             _id: task._id,
             taskName: task.taskName,
             description: task.description,
-            dueDate: task.dueDate,
+            dueDate: dayjs(task.dueDate),
           });
         }}
       >

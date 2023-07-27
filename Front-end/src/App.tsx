@@ -25,8 +25,7 @@ import Dialog from "@mui/material/Dialog";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-
+import dayjs from "dayjs";
 import {
   Button,
   DialogTitle,
@@ -197,6 +196,7 @@ function App() {
             }}
             onClick={() => {
               setOpen(false);
+              setEdit(true);
             }}
           >
             Close
@@ -263,19 +263,17 @@ function App() {
                 onClick={(e) => {
                   if (edit) {
                     e.preventDefault();
-                    fetch(`http://localhost:3000/tasks/${formData._id}`, {
-                      method: "PATCH",
+                    fetch(`http://localhost:3000/updatetask`, {
+                      method: "PUT",
                       headers: {
                         "Content-Type": "application/json",
                       },
                       body: JSON.stringify(formData),
-                    })
-                      .then((res) => res.json())
-                      .then((data) => {
-                        console.log(data);
-                        setUpdate((prev: any) => !prev);
-                        setOpen(false);
-                      });
+                    }).then((data) => {
+                      console.log(data);
+                      setUpdate((prev: any) => !prev);
+                      setOpen(false);
+                    });
                   } else {
                     e.preventDefault();
                     console.log(formData);
@@ -284,7 +282,11 @@ function App() {
                       headers: {
                         "Content-Type": "application/json",
                       },
-                      body: JSON.stringify(formData),
+                      body: JSON.stringify({
+                        ...formData,
+                        dueDate: formData.dueDate.format("YYYY-MM-DD"),
+                        isCompleted: false,
+                      }),
                     })
                       .then((res) => res.json())
                       .then((data) => {
