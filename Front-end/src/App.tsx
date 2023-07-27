@@ -20,17 +20,38 @@ import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
+import Task from "./components/Task";
+import Dialog from "@mui/material/Dialog";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+
+import {
+  Button,
+  DialogTitle,
+  TextField,
+  TextareaAutosize,
+} from "@mui/material";
 
 function App() {
   const [Tasks, setTasks] = useState([]);
-
+  const [open, setOpen] = React.useState(false);
+  const [update, setUpdate] = useState(false);
+  const [formData, setFormData] = useState({
+    taskName: "",
+    description: "",
+    dueDate: Date,
+    isCompleted: false,
+  });
+  const [edit, setEdit] = React.useState(true);
   React.useEffect(() => {
     fetch("http://localhost:3000/tasks")
       .then((res) => res.json())
       .then((data) => {
         setTasks(data);
       });
-  }, []);
+  }, [update]);
   /** 
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 100 },
@@ -45,13 +66,13 @@ function App() {
     color: "#404040",
     marginBottom: "10px",
   };
-  const row = {
+  const input = {
+    width: "80%",
+    height: "3em",
+
     fontSize: "1.5em",
-    fontWeight: "bold",
-    lineHeight: "28px",
-    color: "black",
-    marginBottom: "10px",
-    opacity: "0.6",
+    position: "relative",
+    margin: "10px",
   };
 
   return (
@@ -103,27 +124,182 @@ function App() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {Tasks.map((task: any) => (
-              <TableRow
-                key={task.id}
-                sx={{
-                  "&:last-child td, &:last-child th": {
-                    border: 0,
-                  },
-                  backgroundColor: "#e9ebf0",
-                }}
-              >
-                <TableCell padding="checkbox">
-                  <Checkbox color="primary"></Checkbox>
-                </TableCell>
-                <TableCell sx={row}>{task._id}</TableCell>
-                <TableCell sx={row}>{task.taskName}</TableCell>
-                <TableCell sx={row}>{task.description}</TableCell>
-                <TableCell sx={row}>{task.dueDate}</TableCell>
-              </TableRow>
-            ))}
+            {Tasks.map(
+              (task: {
+                _id: string;
+                taskName: string;
+                description: string;
+                dueDate: Date;
+              }) => (
+                <Task
+                  key={task._id}
+                  _id={task._id}
+                  taskName={task.taskName}
+                  description={task.description}
+                  dueDate={task.dueDate}
+                  setOpen={setOpen}
+                  setUpdate={setUpdate}
+                  setFormData={setFormData}
+                  setTasks={setTasks}
+                />
+              )
+            )}
           </TableBody>
         </Table>
+
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{
+            margin: "auto",
+            marginTop: "2em",
+            display: "block",
+
+            width: "10em",
+            fontSize: "1.5em",
+          }}
+          onClick={() => {
+            setOpen(true);
+            setEdit(false);
+            setFormData({
+              taskName: "",
+              description: "",
+              dueDate: "",
+            });
+          }}
+        >
+          Add Task
+        </Button>
+
+        <Dialog open={open}>
+          <DialogTitle
+            sx={{
+              margin: "auto",
+              fontSize: "2rem",
+              fontWeight: "bold",
+              lineHeight: "28px",
+              color: "#404040",
+              marginY: "0.5em",
+            }}
+          >
+            {edit ? "Edit Task" : "Add Task"}
+          </DialogTitle>
+          <Button
+            variant="contained"
+            color="secondary"
+            sx={{
+              marginLeft: "1em",
+              marginRight: "1em",
+              display: "inline",
+              position: "absolute",
+              right: "0px",
+              top: "10px",
+            }}
+            onClick={() => {
+              setOpen(false);
+            }}
+          >
+            Close
+          </Button>
+
+          <Box sx={{ width: "500px", height: "500px" }}>
+            <form
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.5em",
+                fontWeight: "bold",
+              }}
+            >
+              <TextField
+                sx={input}
+                margin="none"
+                type="text"
+                label="Task Name"
+                name="taskName"
+                value={formData.taskName}
+                inputProps={{
+                  style: { fontSize: "1.5em" },
+                }}
+                onChange={(e) => {
+                  setFormData({ ...formData, taskName: e.target.value });
+                }}
+              />
+
+              <TextField
+                sx={input}
+                margin="dense"
+                inputProps={{
+                  style: { fontSize: "1.5em" },
+                }}
+                label="Description"
+                name="description"
+                multiline
+                maxRows={3}
+                value={formData.description}
+                onChange={(e) => {
+                  setFormData({ ...formData, description: e.target.value });
+                }}
+              />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  sx={input}
+                  label="Due Date"
+                  type="date"
+                  name="dueDate"
+                  lang=" ar-EG"
+                  inputProps={{
+                    style: { fontSize: "1.5em" },
+                  }}
+                  value={formData.dueDate}
+                  onChange={(e) => {
+                    setFormData({ ...formData, dueDate: e });
+                  }}
+                />
+              </LocalizationProvider>
+              <button
+                onClick={(e) => {
+                  if (edit) {
+                    e.preventDefault();
+                    fetch(`http://localhost:3000/tasks/${formData._id}`, {
+                      method: "PATCH",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(formData),
+                    })
+                      .then((res) => res.json())
+                      .then((data) => {
+                        console.log(data);
+                        setUpdate((prev: any) => !prev);
+                        setOpen(false);
+                      });
+                  } else {
+                    e.preventDefault();
+                    console.log(formData);
+                    fetch(`http://localhost:3000/addtask`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(formData),
+                    })
+                      .then((res) => res.json())
+                      .then((data) => {
+                        console.log(data);
+                        setUpdate((prev: any) => !prev);
+                        setOpen(false);
+                      });
+                  }
+                }}
+              >
+                Submit
+              </button>
+            </form>
+          </Box>
+        </Dialog>
       </Box>
     </>
   );

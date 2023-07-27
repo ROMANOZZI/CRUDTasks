@@ -21,9 +21,9 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  taskDescription: String,
-  taskDate: Date,
-  taskCompleted: Boolean,
+  description: String,
+  dueDate: Date,
+  isCompleted: Boolean,
 });
 
 const task = mongoose.model("1", schema);
@@ -42,9 +42,9 @@ app.get("/tasksbyId", async (req, res) => {
 app.post("/addtask", async (req, res) => {
   const newTask = new task({
     taskName: req.body.taskName,
-    taskDescription: req.body.taskDescription,
-    taskDate: req.body.taskDate,
-    taskCompleted: req.body.taskCompleted,
+    description: req.body.description,
+    dueDate: req.body.dueDate,
+    taskCompleted: false,
   });
   await newTask.save();
   res.send(newTask);
@@ -64,7 +64,7 @@ app.put("/updatetask", async (req, res) => {
 app.delete("/deletetask/:id", async (req, res) => {
   console.log(req.params.id);
   task
-    .findByIdAndDelete(req.params.id)
+    .findByIdAndDelete(JSON.parse(req.params.id).id)
     .exec()
     .then(() => {
       res.send(req.params.id + "  deleted successfully");
