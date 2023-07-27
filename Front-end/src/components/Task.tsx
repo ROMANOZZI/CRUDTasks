@@ -1,7 +1,14 @@
 import React from "react";
-import { TableRow, TableCell, Checkbox, Button } from "@mui/material";
+import {
+  TableRow,
+  TableCell,
+  Checkbox,
+  Button,
+  SelectChangeEvent,
+} from "@mui/material";
 import dayjs from "dayjs";
 import { Box } from "@mui/system";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 const row = {
   fontSize: "1.5em",
   fontWeight: "bold",
@@ -20,6 +27,7 @@ const Task = (task: {
   setUpdate: any;
   setFormData: any;
   setTasks: any;
+  tag: string;
 }) => {
   const now = new Date();
   const Date1 = task.dueDate.split("T")[0];
@@ -61,7 +69,45 @@ const Task = (task: {
       </TableCell>
       <TableCell sx={row}>{task._id}</TableCell>
       <TableCell sx={row}>{task.taskName}</TableCell>
+      <TableCell sx={row}>
+        <FormControl fullWidth sx={{ width: "5em" }}>
+          <InputLabel id="demo-simple-select-label" sx={{ width: "4em" }}>
+            Tag
+          </InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={task.tag ? task.tag : "N"}
+            onChange={(e: SelectChangeEvent) => {
+              fetch(`http://localhost:3000/addtag`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  _id: task._id,
+                  tag: e.target.value as string,
+                }),
+              })
+                .then((data) => {
+                  task.setUpdate((prev: any) => !prev);
+                  console.log(data);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }}
+          >
+            <MenuItem value={"N"}>None</MenuItem>
+            <MenuItem value={"study"}>study</MenuItem>
+            <MenuItem value={"home"}>home</MenuItem>
+            <MenuItem value={"work"}>Work</MenuItem>
+            <MenuItem value={"entertainment"}>entertainment</MenuItem>
+          </Select>
+        </FormControl>
+      </TableCell>
       <TableCell sx={row}>{task.description}</TableCell>
+
       <TableCell sx={row}>{Date1}</TableCell>
       <Box
         display="flex"

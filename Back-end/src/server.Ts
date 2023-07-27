@@ -24,6 +24,7 @@ const schema = new mongoose.Schema({
   description: String,
   dueDate: Date,
   isCompleted: Boolean,
+  tag: String,
 });
 
 const task = mongoose.model("1", schema);
@@ -45,6 +46,7 @@ app.post("/addtask", async (req, res) => {
     description: req.body.description,
     dueDate: req.body.dueDate,
     isCompleted: req.body.isCompleted,
+    tag: "",
   });
   await newTask.save();
   res.send(newTask);
@@ -86,7 +88,25 @@ app.delete("/deletetask/:id", async (req, res) => {
       console.log(err);
     });
 });
+app.put("/addtag", async (req, res) => {
+  const updatedTask = await task
+    .updateOne(
+      {
+        _id: req.body._id,
+      },
+      {
+        tag: req.body.tag,
+      }
+    )
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 // Start the server
+
 app.listen(port, () => {
   return console.log(`server is listening on ${port}`);
 });

@@ -4,21 +4,13 @@ import { alpha } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
+
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
+
 import Paper from "@mui/material/Paper";
-import Checkbox from "@mui/material/Checkbox";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import Switch from "@mui/material/Switch";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import { visuallyHidden } from "@mui/utils";
+
 import Task from "./components/Task";
 
 import Menu from "@mui/material/Menu";
@@ -26,14 +18,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Box from "@mui/material/Box";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import dayjs from "dayjs";
-import {
-  Button,
-  DialogTitle,
-  TextField,
-  TextareaAutosize,
-  styled,
-} from "@mui/material";
+
+import { Button, TextField } from "@mui/material";
 import Form from "./components/Form";
 function App() {
   const [Tasks, setTasks] = useState([]);
@@ -44,6 +30,7 @@ function App() {
     description: "",
     dueDate: Date,
     isCompleted: false,
+    tag: "",
   });
   const [filter, setFilter] = useState("");
   const [filterDate, setFilterDate] = useState([]);
@@ -54,16 +41,11 @@ function App() {
       .then((res) => res.json())
       .then((data) => {
         setTasks(data);
+        console.log(data);
         setFilterDate(data);
       });
   }, [update]);
-  /** 
-  const columns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 100 },
-    { field: "name", headerName: "Name", width: 200 },
-    { field: "description", headerName: "Description", width: 200 },
-    { field: "dueDate", headerName: "Due Date", width: 200 },
-  ];*/
+
   const header = {
     fontSize: "2em",
     fontWeight: "bold",
@@ -152,7 +134,7 @@ function App() {
       <Box
         sx={{
           width: "100vw",
-          height: "100vh",
+          height: "max-content",
           backgroundColor: "#FFFFFF",
 
           position: "absolute",
@@ -258,6 +240,7 @@ function App() {
                 <TableCell sx={header}>Done</TableCell>
                 <TableCell sx={header}>ID</TableCell>
                 <TableCell sx={header}>Name</TableCell>
+                <TableCell sx={header}>Tag</TableCell>
                 <TableCell sx={header}>Description</TableCell>
                 <TableCell sx={header}>Due Date</TableCell>
               </TableRow>
@@ -270,6 +253,7 @@ function App() {
                   description: string;
                   dueDate: Date;
                   isCompleted: boolean;
+                  tag: string;
                 }) => (
                   <Task
                     key={task._id}
@@ -282,6 +266,7 @@ function App() {
                     setUpdate={setUpdate}
                     setFormData={setFormData}
                     setTasks={setTasks}
+                    tag={task.tag}
                   />
                 )
               )}
@@ -324,6 +309,7 @@ function App() {
               description: "",
               dueDate: "",
               isCompleted: false,
+              tag: "",
             });
           }}
         >
