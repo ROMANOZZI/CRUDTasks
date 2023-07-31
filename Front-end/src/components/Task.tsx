@@ -41,7 +41,7 @@ const Task = (task: {
         },
         backgroundColor: task.isCompleted
           ? "#b3ffb3"
-          : new Date(Date1) > now
+          : new Date(Date1) < now
           ? "#ff9999"
           : "#ffffff",
       }}
