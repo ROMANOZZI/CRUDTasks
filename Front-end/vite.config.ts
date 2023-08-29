@@ -8,6 +8,9 @@ export default defineConfig({
       jsxRuntime: "classic",
     }),
   ],
+  optimizeDeps: {
+    include: ["react/jsx-runtime"],
+  },
   server: {
     proxy: {
       "/api": {
