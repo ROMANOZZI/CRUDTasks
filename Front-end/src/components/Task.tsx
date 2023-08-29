@@ -26,11 +26,11 @@ const Task = (task: {
   setOpen: any;
   setUpdate: any;
   setFormData: any;
-  setTasks: any;
+  setTasks: (tasks: string[]) => void;
   tag: string;
 }) => {
   const now = new Date();
-  const Date1 = task.dueDate.split("T")[0];
+  const Date1 = JSON.stringify(task.dueDate).split("T")[0];
 
   return (
     <TableRow
@@ -41,7 +41,7 @@ const Task = (task: {
         },
         backgroundColor: task.isCompleted
           ? "#b3ffb3"
-          : new Date(Date1) > now
+          : new Date(Date1) < now
           ? "#ff9999"
           : "#ffffff",
       }}
@@ -61,7 +61,7 @@ const Task = (task: {
                 id: task._id,
                 isCompleted: event.target.checked,
               }),
-            }).then((data) => {
+            }).then(() => {
               task.setUpdate((prev: any) => !prev);
             });
           }}
@@ -148,7 +148,7 @@ const Task = (task: {
                   "Content-Type": "application/json",
                 },
               }
-            ).then((data) => {
+            ).then(() => {
               task.setUpdate((prev: any) => !prev);
             });
           }}
