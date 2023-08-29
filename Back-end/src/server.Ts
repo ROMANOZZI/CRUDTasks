@@ -2,13 +2,15 @@ import mongoose from "mongoose";
 import express from "express";
 import cors from "cors";
 const app = express();
-const port = 3000;
+
+import "dotenv/config";
+
 // Middlewares
 app.use(cors());
 app.use(express.json());
 // Connect to DB
 mongoose
-  .connect("mongodb://localhost:27017/tasks")
+  .connect(process.env.MONGO_DB_URL as string)
   .then(() => {
     console.log("Connected to database");
   })
@@ -27,65 +29,83 @@ const schema = new mongoose.Schema({
   tag: String,
 });
 
-const task = mongoose.model("1", schema);
+const task = mongoose.model(process.env.COLLECTION_NAME as string, schema);
 // Routes
 // get all tasks
 app.get("/tasks", async (req, res) => {
-  const tasks = await task.find({});
-  res.send(tasks);
+  try {
+    const tasks = await task.find({});
+    res.status(200).send(tasks);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
 });
 // get task by id
 app.get("/tasksbyId", async (req, res) => {
-  const required = await task.find({ _id: req.body.id });
-  res.send(required);
+  try {
+    const required = await task.find({ _id: req.body.id });
+    res.status(200).send(required);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
 });
 // add task
 app.post("/addtask", async (req, res) => {
-  const newTask = new task({
-    taskName: req.body.taskName,
-    description: req.body.description,
-    dueDate: req.body.dueDate,
-    isCompleted: req.body.isCompleted,
-    tag: "",
-  });
-  await newTask.save();
-  res.send(newTask);
-});
-// update task
-app.put("/updatetask", async (req, res) => {
-  console.log(req.body);
-  const updatedTask = await task.updateOne(
-    { _id: req.body._id },
-    {
+  try {
+    const newTask = new task({
       taskName: req.body.taskName,
       description: req.body.description,
       dueDate: req.body.dueDate,
       isCompleted: req.body.isCompleted,
-    }
-  );
-  res.send(updatedTask);
+      tag: "",
+    });
+    await newTask.save();
+    res.status(200).send(newTask);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
+});
+// update task
+app.put("/updatetask", async (req, res) => {
+  try {
+    const updatedTask = await task.updateOne(
+      { _id: req.body._id },
+      {
+        taskName: req.body.taskName,
+        description: req.body.description,
+        dueDate: req.body.dueDate,
+        isCompleted: req.body.isCompleted,
+      }
+    );
+    res.status(200).send(updatedTask);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
 });
 app.put("/taskCompleted", async (req, res) => {
-  const updatedTask = await task.updateOne(
-    { _id: req.body.id },
-    { isCompleted: req.body.isCompleted }
-  );
+  try {
+    const updatedTask = await task.updateOne(
+      { _id: req.body.id },
+      { isCompleted: req.body.isCompleted }
+    );
 
-  res.send(updatedTask);
+    res.status(200).send(updatedTask);
+  } catch (err: any) {
+    res.status(500).json({ message: err.message });
+  }
 });
 // delete task
 
 // delete task
 app.delete("/deletetask/:id", async (req, res) => {
-  console.log(req.params.id);
   task
     .findByIdAndDelete(JSON.parse(req.params.id).id)
     .exec()
     .then(() => {
-      res.send(req.params.id + "  deleted successfully");
+      res.status(200).send(req.params.id + "  deleted successfully");
     })
     .catch((err) => {
-      console.log(err);
+      res.status(500).json({ message: err.message });
     });
 });
 app.put("/addtag", async (req, res) => {
@@ -99,14 +119,14 @@ app.put("/addtag", async (req, res) => {
       }
     )
     .then((result) => {
-      res.send(result);
+      res.status(200).send(result);
     })
     .catch((err) => {
-      console.log(err);
+      res.status(500).json({ message: err.message });
     });
 });
 // Start the server
 
-app.listen(port, () => {
-  return console.log(`server is listening on ${port}`);
+app.listen(process.env.PORT_NUMBER, () => {
+  return console.log(`server is listening on ${process.env.PORT_NUMBER}`);
 });
