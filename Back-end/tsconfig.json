@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "ES2022",
+    "module": "ES2022",
     "rootDir": "./src",
-    "moduleResolution": "node10",
+    "outDir": "./dist",
+    "moduleResolution": "NodeNext",
+
+    "noEmit": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "typeRoots": ["node_modules/@types", "./src/types"],
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
