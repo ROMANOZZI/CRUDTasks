@@ -28,5 +28,5 @@ npm run dev
 
 ## Usage
 
-visit http://127.0.0.1:5173/
+visit https://vercel.com/romanozzi/crud-tasks
 
