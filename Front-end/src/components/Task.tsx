@@ -52,7 +52,7 @@ const Task = (task: {
           sx={{ marginLeft: "2em" }}
           checked={task.isCompleted}
           onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-            fetch(`http://localhost:3000/taskCompleted/`, {
+            fetch(`${import.meta.env.VITE_API_URL}/taskCompleted/`, {
               method: "PUT",
               headers: {
                 "Content-Type": "application/json",
@@ -79,7 +79,7 @@ const Task = (task: {
             id="demo-simple-select"
             value={task.tag ? task.tag : "N"}
             onChange={(e: SelectChangeEvent) => {
-              fetch(`http://localhost:3000/addtag`, {
+              fetch(`${import.meta.env.VITE_API_URL}/addtag`, {
                 method: "PUT",
                 headers: {
                   "Content-Type": "application/json",
@@ -139,7 +139,7 @@ const Task = (task: {
           onClick={() => {
             console.log(task._id);
             fetch(
-              `http://localhost:3000/deletetask/${JSON.stringify({
+              `${import.meta.env.VITE_API_URL}/deletetask/${JSON.stringify({
                 id: task._id,
               })}`,
               {

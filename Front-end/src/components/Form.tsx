@@ -167,7 +167,7 @@ const Form = ({
             onClick={(e) => {
               if (formData.taskName && edit) {
                 e.preventDefault();
-                fetch(`http://localhost:3000/updatetask`, {
+                fetch(`${import.meta.env.VITE_API_URL}/updatetask`, {
                   method: "PUT",
                   headers: {
                     "Content-Type": "application/json",
@@ -181,7 +181,7 @@ const Form = ({
               } else {
                 e.preventDefault();
                 console.log(formData);
-                fetch(`http://localhost:3000/addtask`, {
+                fetch(`${import.meta.env.VITE_API_URL}/addtask`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",

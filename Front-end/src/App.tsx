@@ -36,8 +36,9 @@ function App() {
   const [filterDate, setFilterDate] = useState([]);
 
   const [edit, setEdit] = React.useState(true);
+  console.log(JSON.stringify(import.meta.env.VITE_API_URL));
   React.useEffect(() => {
-    fetch("http://localhost:3000/tasks")
+    fetch(`${import.meta.env.VITE_API_URL}/tasks`)
       .then((res) => res.json())
       .then((data) => {
         setTasks(data);
