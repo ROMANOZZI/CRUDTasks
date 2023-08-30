@@ -193,6 +193,9 @@ function App() {
                 position: "relative",
                 color: "#404040",
                 margin: "10px",
+                borderRadius: "5px",
+                border: "1px solid black",
+                backgroundColor: "#a8e3f0",
               }}
               aria-haspopup="true"
               aria-expanded={openOrderBy ? true : undefined}
@@ -239,7 +242,7 @@ function App() {
             <TableHead>
               <TableRow>
                 <TableCell sx={header}>Done</TableCell>
-                <TableCell sx={header}>ID</TableCell>
+
                 <TableCell sx={header}>Name</TableCell>
                 <TableCell sx={header}>Tag</TableCell>
                 <TableCell sx={header}>Description</TableCell>

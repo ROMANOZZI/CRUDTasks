@@ -18,6 +18,10 @@ body {
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+.demo-simple-select-label {
+  color: #000;
+  font-size: 15px;
+}
 
 @keyframes logo-spin {
   from {

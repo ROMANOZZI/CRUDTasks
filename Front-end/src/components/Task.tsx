@@ -1,10 +1,12 @@
 import React from "react";
+import { useTheme } from "@mui/material/styles";
 import {
   TableRow,
   TableCell,
   Checkbox,
   Button,
   SelectChangeEvent,
+  colors,
 } from "@mui/material";
 import dayjs from "dayjs";
 import { Box } from "@mui/system";
@@ -31,7 +33,7 @@ const Task = (task: {
 }) => {
   const now = new Date();
   const Date1 = JSON.stringify(task.dueDate).split("T")[0];
-
+  const theme = useTheme();
   return (
     <TableRow
       key={task._id}
@@ -67,11 +69,11 @@ const Task = (task: {
           }}
         ></Checkbox>
       </TableCell>
-      <TableCell sx={row}>{task._id}</TableCell>
+
       <TableCell sx={row}>{task.taskName}</TableCell>
       <TableCell sx={row}>
         <FormControl fullWidth sx={{ width: "5em" }}>
-          <InputLabel id="demo-simple-select-label" sx={{ width: "4em" }}>
+          <InputLabel id="demo-simple-select-label" sx={{ fontSize: "1em" }}>
             Tag
           </InputLabel>
           <Select
@@ -97,6 +99,22 @@ const Task = (task: {
                   console.log(err);
                 });
             }}
+            sx={{
+              fontSize: "1.25em",
+              width: "fit-content",
+              borderRadius: "5px",
+              border: "1px solid black",
+              color:
+                task.tag === "study"
+                  ? colors.blue[900]
+                  : task.tag === "home"
+                  ? colors.green[900]
+                  : task.tag === "work"
+                  ? colors.yellow[900]
+                  : task.tag === "entertainment"
+                  ? colors.purple[900]
+                  : colors.grey[900],
+            }}
           >
             <MenuItem value={"N"}>None</MenuItem>
             <MenuItem value={"study"}>study</MenuItem>
@@ -111,13 +129,13 @@ const Task = (task: {
       <TableCell sx={row}>{Date1}</TableCell>
       <Box
         display="flex"
+        margin={"auto"}
         flexDirection="row"
-        justifyContent="space-between"
-        margin="10px"
+        alignItems={"center"}
       >
         <Button
           variant="contained"
-          sx={{ margin: "10px" }}
+          sx={{ margin: "10px", marginTop: "3em" }}
           color="primary"
           onClick={() => {
             task.setOpen(true);
@@ -135,9 +153,8 @@ const Task = (task: {
         <Button
           variant="contained"
           color="secondary"
-          sx={{ margin: "10px" }}
+          sx={{ margin: "10px", marginTop: "3em" }}
           onClick={() => {
-            console.log(task._id);
             fetch(
               `${import.meta.env.VITE_API_URL}/deletetask/${JSON.stringify({
                 id: task._id,
