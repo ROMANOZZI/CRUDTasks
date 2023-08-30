@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "nodemon src/server.ts",
     "build": "tsc ",
-    "start": "node src/server.js"
+    "start": "ts-node-esm src/server.ts "
   },
   "keywords": [],
   "author": "",
